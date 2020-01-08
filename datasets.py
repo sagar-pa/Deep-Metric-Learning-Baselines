@@ -14,10 +14,7 @@
 # ==============================================================================
 
 ################# LIBRARIES ###############################
-import warnings
-warnings.filterwarnings("ignore")
-
-import numpy as np, os, sys, pandas as pd, csv, copy
+import numpy as np, os, sys, pandas as pd, csv, copy, json
 import torch, torch.nn as nn, matplotlib.pyplot as plt, random
 
 from torch.utils.data import Dataset
@@ -44,6 +41,8 @@ def give_dataloaders(dataset, opt):
         datasets = give_CUB200_datasets(opt)
     elif opt.dataset=='cars196':
         datasets = give_CARS196_datasets(opt)
+    elif opt.dataset=='places190':
+        datasets = give_PLACES190_datasets(opt)
     elif opt.dataset=='online_products':
         datasets = give_OnlineProducts_datasets(opt)
     elif opt.dataset=='in-shop':
@@ -110,6 +109,43 @@ def give_CUB200_datasets(opt):
 
     return {'training':train_dataset, 'testing':val_dataset, 'evaluation':eval_dataset}
 
+def give_PLACES190_datasets(opt):
+    data_file_name = os.path.join(opt.source_path, 'dataset.json')
+    with open(data_file_name, 'r') as datafile:
+        conversion = {}
+        z = 0
+        dataset = json.load(datafile)
+        for key in dataset:
+            key_array = dataset[key]
+            for place in key_array:
+                conversion[z] = place
+                z = z + 1
+    url_file = os.path.join(opt.source_path, 'data_url.txt')
+    with open(url_file, 'r') as f:
+        lines = [line.strip() for line in f]
+        image_dict = {}
+        for line in lines:
+            x, y, z, id, url, main, thumb = line.strip().split(' ', 7)
+            img_path = opt.source_path + '/' + x + '/' + y + '/' + id + '.jpg'
+            key = int(z)
+            if key not in image_dict.keys():
+                image_dict[key] = []
+            image_dict[key].append(img_path)
+    keys = sorted(list(image_dict.keys()))
+
+    # Following "Deep Metric Learning via Lifted Structured Feature Embedding", we use the first half of classes for training.
+    train, test = [key for key in keys if key % 2 ==0],[key for key in keys if key % 2 ==1]
+    train_image_dict, val_image_dict = {key: image_dict[key] for key in train}, {key: image_dict[key] for key in test}
+
+    train_dataset = BaseTripletDataset(train_image_dict, opt, samples_per_class=opt.samples_per_class)
+    val_dataset = BaseTripletDataset(val_image_dict, opt, is_validation=True)
+    eval_dataset = BaseTripletDataset(train_image_dict, opt, is_validation=True)
+
+    train_dataset.conversion = conversion
+    val_dataset.conversion = conversion
+    eval_dataset.conversion = conversion
+
+    return {'training': train_dataset, 'testing': val_dataset, 'evaluation': eval_dataset}
 
 def give_CARS196_datasets(opt):
     """

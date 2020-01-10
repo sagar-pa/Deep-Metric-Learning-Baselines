@@ -134,7 +134,7 @@ def give_PLACES190_datasets(opt):
     keys = sorted(list(image_dict.keys()))
 
     # Following "Deep Metric Learning via Lifted Structured Feature Embedding", we use the first half of classes for training.
-    train, test = keys[:len(keys)//2], keys[len(keys)//2:]
+    test, train = keys[:len(keys)//2], keys[len(keys)//2:]
     train_image_dict, val_image_dict = {key: image_dict[key] for key in train}, {key: image_dict[key] for key in test}
 
     train_dataset = BaseTripletDataset(train_image_dict, opt, samples_per_class=opt.samples_per_class)

@@ -28,7 +28,12 @@ torch.manual_seed(1); torch.cuda.manual_seed(1); torch.cuda.manual_seed_all(1)
 ##################### NETWORK SETUP ##################
 device = torch.device('cuda')
 #Depending on the choice opt.arch, networkselect() returns the respective network model
-model      = netlib.networkselect('resnet50')
+parser = argparse.ArgumentParser()
+parser.add_argument('--embed_dim',    default=128,         type=int,   help='Embedding dimensionality of the network. Note: in literature, dim=128 is used for ResNet50 and dim=512 for GoogLeNet.')
+parser.add_argument('--arch',         default='resnet50',  type=str,   help='Network backend choice: resnet50, googlenet.')
+parser.add_argument('--not_pretrained',                    action='store_true', help='If added, the network will be trained WITHOUT ImageNet-pretrained weights.')
+opt = parser.parse_args()
+model      = netlib.networkselect(opt)
 model.load_state_dict(torch.load('dmt_example.pt'))
 _          = model.to(device)
 

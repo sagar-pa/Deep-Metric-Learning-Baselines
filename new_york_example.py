@@ -50,7 +50,7 @@ with open (data_file, 'r') as f:
     lines = [line.strip() for line in f]
 dataloader = {}
 for line in lines:
-    id, url = line.split()
+    id, url1, url2 = line.split()
     dataloader[id] = data_source+'images/'+id+'.jpg'
 images= {}
 transf_list = []

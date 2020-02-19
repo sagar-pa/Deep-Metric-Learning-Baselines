@@ -62,13 +62,15 @@ transform = transforms.Compose(transf_list)
 
 for id,loc in dataloader.items():
     images[id] = transform(ensure_3dim(Image.open(loc)))
+
+eval_set = torch.utils.data.DataLoader(images, batch_size=112, num_workers=8, shuffle=False, pin_memory=True, drop_last=False)
 feature_coll = []
 
 model.eval()
 torch.cuda.empty_cache()
 with torch.no_grad():
-    for idx, input in enumerate(images.items()):
-        out = model(input[1].to(device))
+    for idx, input in enumerate(eval_set):
+        out = model(input.to(device))
         feature_coll.extend(out.cpu().detach().numpy().tolist())
 for idx, id in enumerate(images.keys()):
     repres = data_source + 'dmt_features/' + id + '.npy'

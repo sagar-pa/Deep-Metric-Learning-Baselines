@@ -52,7 +52,7 @@ dataloader = {}
 for line in lines:
     id, url1, url2 = line.split()
     dataloader[id] = data_source+'images/'+id+'.jpg'
-eval_dataset        = data.BaseTripletDataset(dataloader, opt, is_validation=True)
+eval_dataset        = data.BaseTripletDataset(dataloader, opt, is_validation=True, samples_per_class=1)
 
 eval_set = torch.utils.data.DataLoader(eval_dataset, batch_size=112, num_workers=8, shuffle=False, pin_memory=True, drop_last=False)
 eval_iter = tqdm(eval_set)

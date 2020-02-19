@@ -8,7 +8,7 @@ from PIL import Image
 import torch, torch.nn as nn
 from torchvision import transforms
 import netlib as netlib
-
+from tqdm import tqdm
 
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
@@ -64,12 +64,13 @@ for id,loc in dataloader.items():
     images[id] = transform(ensure_3dim(Image.open(loc)))
 
 eval_set = torch.utils.data.DataLoader(images, batch_size=112, num_workers=8, shuffle=False, pin_memory=True, drop_last=False)
+eval_iter = tqdm(eval_set)
 feature_coll = []
 
 model.eval()
 torch.cuda.empty_cache()
 with torch.no_grad():
-    for idx, input in enumerate(eval_set):
+    for idx, input in enumerate(eval_iter):
         out = model(input.to(device))
         feature_coll.extend(out.cpu().detach().numpy().tolist())
 for idx, id in enumerate(images.keys()):

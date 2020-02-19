@@ -9,7 +9,7 @@ import torch, torch.nn as nn
 from torchvision import transforms
 import netlib as netlib
 from tqdm import tqdm
-
+import datasets as data
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -52,18 +52,9 @@ dataloader = {}
 for line in lines:
     id, url1, url2 = line.split()
     dataloader[id] = data_source+'images/'+id+'.jpg'
-images= {}
-transf_list = []
-normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-transf_list.extend([transforms.Resize(256),
-                    transforms.CenterCrop(224)])
-transf_list.extend([transforms.ToTensor(), normalize])
-transform = transforms.Compose(transf_list)
+eval_dataset        = data.BaseTripletDataset(dataloader, opt, is_validation=True)
 
-for id,loc in dataloader.items():
-    images[id] = transform(ensure_3dim(Image.open(loc)))
-
-eval_set = torch.utils.data.DataLoader(images, batch_size=112, num_workers=8, shuffle=False, pin_memory=True, drop_last=False)
+eval_set = torch.utils.data.DataLoader(eval_dataset, batch_size=112, num_workers=8, shuffle=False, pin_memory=True, drop_last=False)
 eval_iter = tqdm(eval_set)
 feature_coll = []
 
@@ -73,6 +64,6 @@ with torch.no_grad():
     for idx, input in enumerate(eval_iter):
         out = model(input.to(device))
         feature_coll.extend(out.cpu().detach().numpy().tolist())
-for idx, id in enumerate(images.keys()):
+for idx, id in enumerate(dataloader.keys()):
     repres = data_source + 'dmt_features/' + id + '.npy'
     np.save(repres, feature_coll[idx])

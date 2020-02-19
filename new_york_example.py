@@ -48,11 +48,16 @@ data_source = os.getcwd()+ '/Datasets/new_york/'
 data_file = data_source + 'new_york_url_tst_2.txt'
 with open (data_file, 'r') as f:
     lines = [line.strip() for line in f]
+ids = []
+sources = []
 dataloader = {}
 for line in lines:
     id, url1, url2 = line.split()
-    dataloader[id] = data_source+'images/'+id+'.jpg'
-eval_dataset        = data.BaseTripletDataset(dataloader, opt, is_validation=True, samples_per_class=1)
+    ids.append(id)
+    sources.append(data_source+'images/'+id+'.jpg')
+
+dataloader[0] = sources
+eval_dataset        = data.BaseTripletDataset(dataloader, opt, is_validation=True, samples_per_class=501)
 
 eval_set = torch.utils.data.DataLoader(eval_dataset, batch_size=112, num_workers=8, shuffle=False, pin_memory=True, drop_last=False)
 eval_iter = tqdm(eval_set)
@@ -64,6 +69,6 @@ with torch.no_grad():
     for idx, input in enumerate(eval_iter):
         out = model(input.to(device))
         feature_coll.extend(out.cpu().detach().numpy().tolist())
-for idx, id in enumerate(dataloader.keys()):
+for idx, id in enumerate(ids):
     repres = data_source + 'dmt_features/' + id + '.npy'
     np.save(repres, feature_coll[idx])

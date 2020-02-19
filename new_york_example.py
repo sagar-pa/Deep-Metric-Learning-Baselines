@@ -68,7 +68,7 @@ model.eval()
 torch.cuda.empty_cache()
 with torch.no_grad():
     for idx, input in enumerate(images.items()):
-        out = model(input.to(device))
+        out = model(input[1].to(device))
         feature_coll.extend(out.cpu().detach().numpy().tolist())
 for idx, id in enumerate(images.keys()):
     repres = data_source + 'dmt_features/' + id + '.npy'

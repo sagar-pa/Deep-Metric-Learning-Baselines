@@ -15,6 +15,9 @@
 
 
 #################### LIBRARIES ########################
+import warnings
+warnings.filterwarnings("ignore")
+
 import os, sys, numpy as np, argparse, imp, datetime, time, pickle as pkl, random, json
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 

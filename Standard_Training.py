@@ -318,4 +318,3 @@ for epoch in range(opt.n_epochs):
         scheduler.step()
 
     print('\n-----\n')
-torch.save(model.state_dict(), 'dmt_example.pt')
